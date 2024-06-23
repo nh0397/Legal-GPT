@@ -12,16 +12,20 @@ import json
 from urllib.parse import quote_plus
 from dotenv import load_dotenv
 import os
+import logging
+from open_ai_schema import function_schema
 
 load_dotenv()
 
 # Environment variables
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 USERNAME = os.getenv("USER_NAME")
 PASSWORD = os.getenv("PASSWORD")
 OPEN_AI_KEY = os.getenv("Open_AI_Key")
 
 openai.api_key = OPEN_AI_KEY
+
+logging.basicConfig(level=logging.INFO)
 
 # Retry condition: Retry on any exception
 def retry_if_exception(exception):
@@ -95,11 +99,11 @@ class GoogleEmbeddings:
         self.model_name = model_name
 
     def generate_embeddings(self, inp: str) -> np.ndarray:
-        if not GOOGLE_API_KEY:
+        if not GEMINI_API_KEY:
             print("Please set correct Google API key")
             return []
 
-        genai.configure(api_key=GOOGLE_API_KEY)
+        genai.configure(api_key=GEMINI_API_KEY)
         result = genai.embed_content(
             model=self.model_name, content=inp, task_type="SEMANTIC_SIMILARITY"
         )
@@ -140,20 +144,22 @@ class MongoDB:
 
     def connect(self) -> Union[pymongo.MongoClient, None]:
         if not self.password:
-            print("Please set env variable for password!")
-            return
+            logging.error("Please set env variable for password!")
+            return None
 
         escaped_username = quote_plus(self.username)
         escaped_password = quote_plus(self.password)
 
         uri = f"mongodb+srv://{escaped_username}:{escaped_password}@cluster0.5hufumz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
+        logging.info(f"Connecting to MongoDB with URI: {uri}")
+
         client = pymongo.MongoClient(uri, server_api=ServerApi("1"))
 
         try:
             client.admin.command("ping")
-            print("Successfully connected to MongoDB!")
+            logging.info("Successfully connected to MongoDB!")
             return client
         except Exception as e:
-            print(e)
-        return None
+            logging.error(f"Failed to connect to MongoDB: {e}")
+            return None

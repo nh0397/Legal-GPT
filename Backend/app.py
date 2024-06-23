@@ -18,7 +18,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 USERNAME = os.getenv("USER_NAME")
 PASSWORD = os.getenv("PASSWORD")
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPEN_AI_KEY = os.getenv("Open_AI_Key")
 
 logging.basicConfig(level=logging.INFO)
