@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, TextField, Button, Paper, Typography, IconButton } from '@mui/material';
+import { Box, TextField, Button, Paper, Typography, IconButton, CircularProgress } from '@mui/material';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import CloseIcon from '@mui/icons-material/Close';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import config from '../config';
+import MessageList from './MessageList';
 
 function ChatBox() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchMessages();
@@ -33,18 +35,46 @@ function ChatBox() {
         formData.append('file', file);
       }
 
-      try {
-        const response = await axios.post(`${config.API_BASE_URL}/messages`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
+      setLoading(true);
+
+      // Send the message to the backend using fetch to handle streaming
+      const response = await fetch(`${config.API_BASE_URL}/messages`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      // Add user message
+      const newMessage = {
+        text: input,
+        file: file ? file.name : null,
+        user: true
+      };
+      setMessages(prevMessages => [...prevMessages, newMessage]);
+      setInput('');
+      setFile(null);
+
+      // Handle streaming response
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let extractedText = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        extractedText += chunk;
+        setMessages(prevMessages => {
+          const lastMessage = prevMessages[prevMessages.length - 1];
+          if (lastMessage.user) {
+            return [...prevMessages, { text: chunk, user: false }];
+          } else {
+            const updatedMessages = [...prevMessages];
+            updatedMessages[updatedMessages.length - 1].text += chunk;
+            return updatedMessages;
           }
         });
-        setMessages([...messages, response.data]);
-        setInput('');
-        setFile(null);
-      } catch (error) {
-        console.error('Error sending message', error);
       }
+
+      setLoading(false);
     }
   };
 
@@ -64,22 +94,7 @@ function ChatBox() {
   return (
     <Paper elevation={3} sx={{ p: 2, height: '80vh', display: 'flex', flexDirection: 'column' }}>
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', mb: 2 }}>
-        {messages.map((message, index) => (
-          <Box key={index} my={1}>
-            {message.text && (
-              <Typography variant="body1" component="p">
-                {message.text}
-              </Typography>
-            )}
-            {message.file && (
-              <Typography variant="body2" component="p" color="textSecondary">
-                {message.file}
-              </Typography>
-            )}
-          </Box>
-        ))}
-      </Box>
+      <MessageList messages={messages} />
       {file && (
         <Box display="flex" alignItems="center" mb={2} p={1} border={1} borderColor="grey.400" borderRadius="4px">
           <Typography variant="body2" component="p" sx={{ flexGrow: 1 }}>
@@ -111,8 +126,13 @@ function ChatBox() {
             <AttachFileIcon />
           </IconButton>
         </label>
-        <Button variant="contained" color="primary" onClick={handleSend}>
-          Send
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSend}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Send'}
         </Button>
       </Box>
     </Paper>
