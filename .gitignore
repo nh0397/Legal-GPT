@@ -1,3 +1,2 @@
-# .gitignore
-./legal-doc-summarize/node_modules/*
-./Backend/userFiles/
+legal-doc-summarizer/node_modules/
+Backend/userFiles/
