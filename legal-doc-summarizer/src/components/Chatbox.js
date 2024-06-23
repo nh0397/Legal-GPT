@@ -15,13 +15,39 @@ function ChatBox() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Clear state variables on refresh
+    window.addEventListener('beforeunload', clearLocalStorage);
+
+    // Clear backend messages on component mount
+    clearBackendMessages();
+
+    // Fetch messages
     fetchMessages();
+
+    return () => {
+      window.removeEventListener('beforeunload', clearLocalStorage);
+    };
   }, []);
+
+  const clearLocalStorage = () => {
+    localStorage.removeItem('messages');
+    localStorage.removeItem('input');
+    localStorage.removeItem('file');
+  };
+
+  const clearBackendMessages = async () => {
+    try {
+      await axios.post(`${config.API_BASE_URL}/clear`);
+    } catch (error) {
+      console.error('Error clearing backend messages', error);
+    }
+  };
 
   const fetchMessages = async () => {
     try {
       const response = await axios.get(`${config.API_BASE_URL}/messages`);
       setMessages(response.data);
+      localStorage.setItem('messages', JSON.stringify(response.data));
     } catch (error) {
       console.error('Error fetching messages', error);
     }
@@ -49,11 +75,15 @@ function ChatBox() {
         file: file ? file.name : null,
         user: true
       };
-      setMessages(prevMessages => [...prevMessages, newMessage]);
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
+      localStorage.setItem('messages', JSON.stringify(updatedMessages));
       setInput('');
       setFile(null);
+      localStorage.removeItem('input');
+      localStorage.removeItem('file');
 
-      // Handle streaming response
+      // Handle streaming response for PDF extraction or AI response
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let extractedText = '';
@@ -62,6 +92,7 @@ function ChatBox() {
         if (done) break;
         const chunk = decoder.decode(value);
         extractedText += chunk;
+        console.log(`Received chunk: ${chunk}`);  // Log the received chunk
         setMessages(prevMessages => {
           const lastMessage = prevMessages[prevMessages.length - 1];
           if (lastMessage.user) {
@@ -69,6 +100,7 @@ function ChatBox() {
           } else {
             const updatedMessages = [...prevMessages];
             updatedMessages[updatedMessages.length - 1].text += chunk;
+            localStorage.setItem('messages', JSON.stringify(updatedMessages));
             return updatedMessages;
           }
         });
@@ -84,11 +116,13 @@ function ChatBox() {
       toast.error('Please upload a PDF file.');
     } else {
       setFile(selectedFile);
+      localStorage.setItem('file', selectedFile);
     }
   };
 
   const handleFileRemove = () => {
     setFile(null);
+    localStorage.removeItem('file');
   };
 
   return (
@@ -111,7 +145,10 @@ function ChatBox() {
           variant="outlined"
           placeholder="Type a message..."
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            localStorage.setItem('input', e.target.value);
+          }}
           sx={{ mr: 1 }}
         />
         <input

@@ -28,18 +28,13 @@ const MessageList = ({ messages }) => {
             }}
           >
             {message.text && (
-              <Typography variant="body1" component="p">
+              <Typography variant="body1" component="p" style={{ whiteSpace: 'pre-line' }}>
                 {message.text}
               </Typography>
             )}
             {message.file && (
               <Typography variant="body2" component="p" color="textSecondary">
                 {message.file}
-              </Typography>
-            )}
-            {message.extracted_text && (
-              <Typography variant="body2" component="p" color="textPrimary">
-                Extracted Text: {message.extracted_text}
               </Typography>
             )}
           </Box>
