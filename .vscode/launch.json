@@ -2,21 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Flask",
+            "name": "Python: app.py",
             "type": "python",
             "request": "launch",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "Backend\\app.py",
-                "FLASK_DEBUG": "1"
-            },
-            "args": [
-                "run",
-                "--no-debugger",
-                "--no-reload"
-            ],
-            "jinja": true,
-            "autoStartBrowser": false
+            "program": "${workspaceFolder}/Backend/app.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "pythonPath": "F:/asus/SFSU/Semester-3/Hackathon/Web-app/Backend/venv/Scripts/python.exe"  // Replace with the actual path if needed
         }
     ]
 }
