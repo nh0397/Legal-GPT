@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: app.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Backend/app.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "pythonPath": "F:/asus/SFSU/Semester-3/Hackathon/Web-app/Backend/venv/Scripts/python.exe"  // Replace with the actual path if needed
+        }
+    ]
+}
