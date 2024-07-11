@@ -75,6 +75,15 @@ This platform leverages Large Language Models (LLMs) and Retrieval-Augmented Gen
     cd ..
     ```
 
+5. **Set up the environment variables:**
+    Create a `.env` file in the root directory and add the following lines:
+    ```plaintext
+    GEMINI_API_KEY=your_gemini_api_key
+    USER_NAME=your_username
+    PASSWORD=your_password
+    Open_AI_Key=your_openai_key
+    ```
+
 ### Usage
 
 1. **Data Ingestion:**
@@ -100,6 +109,10 @@ This platform leverages Large Language Models (LLMs) and Retrieval-Augmented Gen
     - **Q&A**: Ask questions about legal documents and get detailed answers.
     - **Analysis**: Generate insights and recommendations based on historical data.
 
+## Demo
+
+![LegalGpt](./Gif/LegalGPT.gif)
+
 ## Contributing
 
 We welcome contributions to improve this platform. Please follow these steps to contribute:
@@ -122,3 +135,7 @@ We welcome contributions to improve this platform. Please follow these steps to 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+For questions or suggestions, please contact Naisarg Halvadiya.
